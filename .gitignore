@@ -8,3 +8,4 @@ profile*
 .ipynb
 .DS_Store
 .pyx
+credentials.*
