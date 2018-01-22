@@ -7,7 +7,6 @@ from numba import jit
 
 from util.Camera import Camera
 from util.FPS_counter import FPS_counter
-from pynput import keyboard
 import util.Options as Options
 
 # from configuration import Sim
@@ -63,9 +62,6 @@ def run_sim(imgFile):
 
     fps = FPS_counter(limit=30)
     display_counter = 0 # display values for a short time if they change
-
-    # key_listner = keyboard.Listener(on_press=None, on_release=on_release)
-    # key_listner.start()
 
     run = True
 
