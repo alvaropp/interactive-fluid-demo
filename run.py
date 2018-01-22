@@ -1,4 +1,5 @@
 # Fluid sim demo prototype
+import glob
 
 import numpy as np
 import cv2
@@ -12,53 +13,67 @@ import util.Options as Options
 # from configuration import Sim
 import configuration
 
-# Using a queue to decouple key press from update action
-pressed_keys = []
-def on_release(key):
-    if hasattr(key, 'char'):
-        pressed_keys.append(key.char)
+camera = Camera(imgFile=None, camera_index=configuration.camera_index, no_cam_allowed=True)
 
-cv2.startWindowThread()
-cv2.namedWindow("window", flags=cv2.WND_PROP_FULLSCREEN)
+def run_sim(imgFile):
+    """ imgFile: filename of the image uploaded by the user
+    """
 
-camera = Camera(camera_index=configuration.camera_index, no_cam_allowed=True)
+    print("Processing:", imgFile)
 
-# initialise run-time configurable Options
-# (display name, keys, range, step, initial value)
-fullscreen = Options.Cycle('Fullscreen', 'f', ['Window', 'Fullscreen'], configuration.fullscreen)
-mirror_screen = Options.Cycle('Mirror Screen', 'g', ['Normal', 'Horizontal', 'Verticle', 'Both'], configuration.mirror_screen)
-render_mask = Options.Cycle('Render Mask', 'm', ['false', 'true'], configuration.render_mask)
+    ################################### SET UP ################################
+    ###########################################################################
+    # Using a queue to decouple key press from update action
+    # pressed_keys = []
+    # def on_release(key):
+    #     if hasattr(key, 'char'):
+    #         pressed_keys.append(key.char)
 
-bg_mode = Options.Cycle('BG', 'b', ['white', 'black', 'hue', 'bg subtract'], configuration.bg_mode)
-mask_level = Options.Range('Mask Threshold', ['1','2'], [0, 1], 0.03, configuration.mask_level)
-mask_width = Options.Range('Mask Width', ['3','4'], [0, 0.5], 0.01, configuration.mask_width)
-optical_flow = Options.Cycle('Optical Flow', 'o', ['false', 'true'], configuration.optical_flow)
+    cv2.startWindowThread()
+    cv2.namedWindow("window", flags=cv2.WND_PROP_FULLSCREEN)
 
-sim_res_multiplier = Options.Range('Sim Res', ['9','0'], [0.1, 2.0], 0.1, configuration.sim_res_multiplier)
-flow_speed = Options.Range('Flow Speed', ['-','='], [0.02, 1], 0.02, configuration.flow_speed)
-flow_direction = Options.Cycle('Flow Direction', 'p', ['right', 'down', 'left', 'up'], configuration.flow_direction)
-num_smoke_streams = Options.Range('Smoke Streams', ['[',']'], [1, 50], 1, configuration.num_smoke_streams)
-smoke_percentage = Options.Range('Smoke Amount', ['\'','#'], [0.1, 1], 0.1, configuration.smoke_percentage)
+    camera = Camera(imgFile=imgFile, camera_index=configuration.camera_index, no_cam_allowed=True)
 
-debugMode = Options.Cycle('Mode', 'd', ['Normal', 'Debug'], 0)
+    # initialise run-time configurable Options
+    # (display name, keys, range, step, initial value)
+    fullscreen = Options.Cycle('Fullscreen', 'f', ['Window', 'Fullscreen'], configuration.fullscreen)
+    mirror_screen = Options.Cycle('Mirror Screen', 'g', ['Normal', 'Horizontal', 'Verticle', 'Both'], configuration.mirror_screen)
+    render_mask = Options.Cycle('Render Mask', 'm', ['false', 'true'], configuration.render_mask)
 
-# add to a list to update and display
-options = [fullscreen, mirror_screen, render_mask,
-    bg_mode, mask_level, mask_width, optical_flow,
-    sim_res_multiplier, flow_speed, flow_direction, num_smoke_streams, smoke_percentage,
-    debugMode]
+    bg_mode = Options.Cycle('BG', 'b', ['white', 'black', 'hue', 'bg subtract'], configuration.bg_mode)
+    mask_level = Options.Range('Mask Threshold', ['1','2'], [0, 1], 0.03, configuration.mask_level)
+    mask_width = Options.Range('Mask Width', ['3','4'], [0, 0.5], 0.01, configuration.mask_width)
+    optical_flow = Options.Cycle('Optical Flow', 'o', ['false', 'true'], configuration.optical_flow)
 
-def run_sim():
+    sim_res_multiplier = Options.Range('Sim Res', ['9','0'], [0.1, 2.0], 0.1, configuration.sim_res_multiplier)
+    flow_speed = Options.Range('Flow Speed', ['-','='], [0.02, 1], 0.02, configuration.flow_speed)
+    flow_direction = Options.Cycle('Flow Direction', 'p', ['right', 'down', 'left', 'up'], configuration.flow_direction)
+    num_smoke_streams = Options.Range('Smoke Streams', ['[',']'], [1, 50], 1, configuration.num_smoke_streams)
+    smoke_percentage = Options.Range('Smoke Amount', ['\'','#'], [0.1, 1], 0.1, configuration.smoke_percentage)
+
+    debugMode = Options.Cycle('Mode', 'd', ['Normal', 'Debug'], 0)
+
+    # add to a list to update and display
+    options = [fullscreen, mirror_screen, render_mask,
+        bg_mode, mask_level, mask_width, optical_flow,
+        sim_res_multiplier, flow_speed, flow_direction, num_smoke_streams, smoke_percentage,
+        debugMode]
+    ###########################################################################
+    ################################## END SETUP ##############################
+
     fps = FPS_counter(limit=30)
-
     display_counter = 0 # display values for a short time if they change
 
-    key_listner = keyboard.Listener(on_press=None, on_release=on_release)
-    key_listner.start()
+    # key_listner = keyboard.Listener(on_press=None, on_release=on_release)
+    # key_listner.start()
 
     run = True
 
-    while(run):
+    # Added a frame counter (skip first frame)
+    frame = 1
+    frameJump = 25
+    frameMax = 227
+    while(frame <= frameMax):
         fps.update()
 
         if display_counter > 0:
@@ -131,31 +146,47 @@ def run_sim():
         # render the output
         cv2.imshow('window', output)
 
-        for key in pressed_keys:
-            # update the options (poll for input, cycle)
-            for option in options:
-                if option.update(key, fps.last_dt):
-                    display_counter = 5
+        # Save the output to file every some frames
+        if frame % frameJump == 0:
+            ind = int(frame/frameJump)
+            name = imgFile.split("/")[-1].split(".")[0]
+            fullPath = "server/out/{}_{}.png".format(name, ind)
+            cv2.imwrite(fullPath, output)
 
-            # poll for quit, reset
-            if key == 'q':
-                run = False
-            elif key == 'r':
-                sim.reset()
-                camera.reset()
+        # for key in pressed_keys:
+        #     # update the options (poll for input, cycle)
+        #     for option in options:
+        #         if option.update(key, fps.last_dt):
+        #             display_counter = 5
+        #
+        #     # poll for quit, reset
+        #     if key == 'q':
+        #         run = False
+        #     elif key == 'r':
+        #         sim.reset()
+        #         camera.reset()
 
-        pressed_keys[:] = []
+        # pressed_keys[:] = []
 
-    key_listner.stop()
+        # Update frame
+        frame += 1
 
-if(camera.active):
-    run_sim()
-else:
-    print("ERROR: Couldn't capture frame. Is Webcam available/enabled?")
+    # key_listner.stop()
 
-# close the window
-cv2.destroyAllWindows()
-# weirdly, this helps
-cv2.waitKey(1)
-cv2.waitKey(1)
-cv2.waitKey(1)
+
+if __name__ == "__main__":
+    # Create list of input images
+    toProcess = glob.glob("server/in/*.jpeg")
+    print("toProcess =", toProcess)
+    if(camera.active):
+        for img in toProcess:
+            run_sim(img)
+    else:
+        print("ERROR: Couldn't capture frame. Is Webcam available/enabled?")
+
+    # # close the window
+    # cv2.destroyAllWindows()
+    # # weirdly, this helps
+    # cv2.waitKey(1)
+    # cv2.waitKey(1)
+    # cv2.waitKey(1)

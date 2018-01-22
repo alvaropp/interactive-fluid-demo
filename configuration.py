@@ -6,9 +6,9 @@ camera_index = 0
 
 fullscreen = False
 mirror_screen = 0 # 'Normal', 'Horizontal', 'Verticle', 'Both'
-render_mask = True
+render_mask = False
 
-bg_mode = 1 # 'white', 'black', 'hue', 'bg subtract'
+bg_mode = 0 # 'white', 'black', 'hue', 'bg subtract'
 mask_level = 0.19
 mask_width = 0.1
 optical_flow = True

@@ -2,7 +2,6 @@ from numba import jit
 import numpy as np
 import cv2
 
-random = np.array(np.power(np.random.rand(16, 8, 3), 3) * 255, dtype=np.uint8)
 
 class Camera:
 
@@ -24,7 +23,13 @@ class Camera:
         else:
             cv2.resize(cropped_frame, self._size, dst=dst)
 
-    def __init__(self, size=(640,360), camera_index=0, no_cam_allowed=False):
+    def __init__(self, imgFile, size=(640,360), camera_index=0, no_cam_allowed=False):
+        if imgFile is None:
+            self.img = np.array(np.power(np.random.rand(16, 8, 3), 3) * 255, dtype=np.uint8)
+            self.img_original = self.img.copy()
+        else:
+            self.img = cv2.imread(imgFile)
+            self.img_original = self.img.copy()
         self._no_cam_allowed = no_cam_allowed
         self._cap = cv2.VideoCapture(camera_index)
         self._size = size
@@ -33,14 +38,12 @@ class Camera:
         self._mask = np.zeros(self._size[::-1], dtype=np.uint8)
         self._input_frame = np.zeros((*self._size[::-1], 3), dtype=np.uint8)
         self._hsv_field = np.zeros((*self._size[::-1], 3), dtype=np.uint8)
-
         self._last_grey = np.zeros(self._size[::-1], dtype=np.uint8)
         self._current_grey = np.zeros(self._size[::-1], dtype=np.uint8)
 
         if not self._cap.isOpened():
 
-            # random = np.array(np.power(np.random.rand(16, 8, 3), 3) * 255, dtype=np.uint8)
-            self._resize_frame(random, dst=self._input_frame)
+            self._resize_frame(self.img, dst=self._input_frame)
 
             ''' HSV test image
             test_image = np.zeros_like(self._input_frame, dtype=np.uint8)
@@ -63,8 +66,8 @@ class Camera:
             if ret:
                 self._resize_frame(frame, self._input_frame, mirror_screen)
         else:
-            # else use a random image
-            self._resize_frame(random, self._input_frame, mirror_screen)
+            # get the input image
+            self._resize_frame(self.img, self._input_frame, mirror_screen)
 
         self._last_grey[:] = self._current_grey
         cv2.cvtColor(self._input_frame, cv2.COLOR_BGR2GRAY, dst=self._current_grey)
@@ -87,7 +90,7 @@ class Camera:
 
     def reset(self):
         if not self._cap.isOpened():
-            random[:] = np.array(np.power(np.random.rand(16, 8, 3), 3) * 255, dtype=np.uint8)
+            self.img = self.img_original.copy()
 
     @property
     def active(self):

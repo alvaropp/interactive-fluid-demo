@@ -5,3 +5,6 @@ csim/build
 csim/AltSim.c*
 csim/*.save
 profile*
+.ipynb
+.DS_Store
+.pyx
