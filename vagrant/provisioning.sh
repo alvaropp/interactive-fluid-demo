@@ -8,6 +8,7 @@ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x Miniconda3-latest-Linux-x86_64.sh
 ./Miniconda3-latest-Linux-x86_64.sh -b
 export PATH="$HOME/miniconda3/bin:$PATH"
+source ~/.bashrc
 
 # Install dependencies
 sudo apt-get install libgtk2.0-0 -y
@@ -19,7 +20,7 @@ pip install pynput tweepy imageio
 cd ..
 wget https://github.com/alvaropp/interactive-fluid-twitter/archive/master.zip
 sudo apt-get install unzip
-unzip master.unzip
+unzip master.zip
 cd interactive-fluid-twitter-master/csim
 python setup.py build_ext --inplace
 cd ..
