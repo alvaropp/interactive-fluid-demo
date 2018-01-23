@@ -20,5 +20,7 @@ cd ..
 wget https://github.com/alvaropp/interactive-fluid-twitter/archive/master.zip
 sudo apt-get install unzip
 unzip master.unzip
-cd interactive-fluid-twitter-master/
+cd interactive-fluid-twitter-master/csim
+python setup.py build_ext --inplace
+cd ..
 python serve.py
