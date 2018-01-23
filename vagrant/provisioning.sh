@@ -23,4 +23,7 @@ unzip master.unzip
 cd interactive-fluid-twitter-master/csim
 python setup.py build_ext --inplace
 cd ..
+mkdir server && cd server
+mkdir in && mkfir out
+cd ..
 python serve.py
