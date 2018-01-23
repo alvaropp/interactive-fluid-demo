@@ -24,16 +24,32 @@ class Camera:
             cv2.resize(cropped_frame, self._size, dst=dst)
 
     def __init__(self, imgFile, size=(640,360), camera_index=0, no_cam_allowed=False):
+        self._no_cam_allowed = no_cam_allowed
+        self._cap = cv2.VideoCapture(camera_index)
         if imgFile is None:
             self.img = np.array(np.power(np.random.rand(16, 8, 3), 3) * 255, dtype=np.uint8)
             self.img_original = self.img.copy()
+            self._size = (640, 360)
+            dimSize = 0
         else:
             self.img = cv2.imread(imgFile)
             self.img_original = self.img.copy()
-        self._no_cam_allowed = no_cam_allowed
-        self._cap = cv2.VideoCapture(camera_index)
-        self._size = size
-        self._ratio = size[0] / size[1]
+            # Get larger dimension of the input image
+            print("SIZE ISSS")
+            print(self.img.shape)
+            size = self.img.shape[0]
+            dimSize = 0  # Height
+            if self.img.shape[1] > self.img.shape[0]:
+                size = self.img.shape[1]
+                dimSize = 1  # Width
+            if dimSize == 0:
+                self._size = (int(np.floor(360/self.img.shape[1]*self.img.shape[0])), 360)
+            else:
+                self._size = (640, int(np.floor(640/self.img.shape[0]*self.img.shape[1])))
+
+        print("SIZE IS")
+        print(dimSize, self._size)
+        self._ratio = 1      ## TRYING TO AVOID IMAGE CROPPING
         self._fgbg = cv2.createBackgroundSubtractorKNN()
         self._mask = np.zeros(self._size[::-1], dtype=np.uint8)
         self._input_frame = np.zeros((*self._size[::-1], 3), dtype=np.uint8)
@@ -44,16 +60,6 @@ class Camera:
         if not self._cap.isOpened():
 
             self._resize_frame(self.img, dst=self._input_frame)
-
-            ''' HSV test image
-            test_image = np.zeros_like(self._input_frame, dtype=np.uint8)
-            x = np.linspace(0, 255, size[0], dtype=np.uint8)
-            y = np.linspace(255, 0, size[1], dtype=np.uint8)
-            XX, YY = np.meshgrid(x, y)
-            test_image[:, :, 1] = XX
-            test_image[:, :, 2] = YY
-            self._input_frame = cv2.cvtColor(test_image, cv2.COLOR_HSV2BGR)
-            '''
 
     def __del__(self):
         self._cap.release()
