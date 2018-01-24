@@ -28,5 +28,4 @@ cd .. && mkdir server && cd server
 mkdir in && mkdir out && cd ..
 mv ../credentials.txt ./
 chown -R vagrant:vagrant ../interactive-fluid-twitter-master/
-
 echo "============== Finished installing interactive-fluid-twitter =============="
