@@ -27,9 +27,9 @@ def run_sim(imgFile):
     # def on_release(key):
     #     if hasattr(key, 'char'):
     #         pressed_keys.append(key.char)
-
-    cv2.startWindowThread()
-    cv2.namedWindow("window", flags=cv2.WND_PROP_FULLSCREEN)
+    #
+    # cv2.startWindowThread()
+    # cv2.namedWindow("window", flags=cv2.WND_PROP_FULLSCREEN)
 
     camera = Camera(imgFile=imgFile, camera_index=configuration.camera_index, no_cam_allowed=True)
 
@@ -83,11 +83,11 @@ def run_sim(imgFile):
             flow = np.zeros((sim.shape[1], sim.shape[0], 2))
 
         # Always True on first iteration. Update fullscreen if option changed
-        if fullscreen.get_has_changed(reset_change_flag=True):
-            if fullscreen.current:
-                cv2.setWindowProperty("window", cv2.WND_PROP_FULLSCREEN, 1)
-            else:
-                cv2.setWindowProperty("window", cv2.WND_PROP_FULLSCREEN, 0)
+        # if fullscreen.get_has_changed(reset_change_flag=True):
+            # if fullscreen.current:
+                # cv2.setWindowProperty("window", cv2.WND_PROP_FULLSCREEN, 1)
+            # else:
+                # cv2.setWindowProperty("window", cv2.WND_PROP_FULLSCREEN, 0)
 
         if debugMode.get_has_changed(reset_change_flag=True):
             sim.mode = debugMode.current
@@ -140,7 +140,7 @@ def run_sim(imgFile):
             cv2.putText(output, 'q=Quit, r=Reset', (30,output_shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_color)
 
         # render the output
-        cv2.imshow('window', output)
+        # cv2.imshow('window', output)
 
         # Save the output to file every some frames
         if frame % frameJump == 0:
