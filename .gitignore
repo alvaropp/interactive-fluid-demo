@@ -12,3 +12,4 @@ credentials.*
 server/
 .vagrant/
 *.log
+miniconda.sh
