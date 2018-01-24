@@ -23,6 +23,9 @@ wget https://github.com/alvaropp/interactive-fluid-twitter/archive/master.zip
 sudo apt-get install unzip
 unzip master.zip
 chown -R vagrant:vagrant interactive-fluid-twitter-master/
+chmod 777 vagrant:vagrant interactive-fluid-twitter-master/
+setfacl -m u:vagrant:rwx interactive-fluid-twitter-master/
+
 cd interactive-fluid-twitter-master/csim
 python setup.py build_ext --inplace
 cd .. && mkdir server && cd server
