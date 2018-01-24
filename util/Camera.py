@@ -35,8 +35,6 @@ class Camera:
             self.img = cv2.imread(imgFile)
             self.img_original = self.img.copy()
             # Get larger dimension of the input image
-            print("SIZE ISSS")
-            print(self.img.shape)
             size = self.img.shape[0]
             dimSize = 0  # Height
             if self.img.shape[1] > self.img.shape[0]:
@@ -47,8 +45,6 @@ class Camera:
             else:
                 self._size = (640, int(np.floor(640/self.img.shape[0]*self.img.shape[1])))
 
-        print("SIZE IS")
-        print(dimSize, self._size)
         self._ratio = 1      ## TRYING TO AVOID IMAGE CROPPING
         self._fgbg = cv2.createBackgroundSubtractorKNN()
         self._mask = np.zeros(self._size[::-1], dtype=np.uint8)
