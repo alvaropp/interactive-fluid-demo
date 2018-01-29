@@ -39,53 +39,65 @@ def create_gif(filenames, duration):
 # Stream
 class MyStreamListener(TwythonStreamer):
     def on_success(self, status):
-        try:
-            id_str = status['id_str']
-            text_ = status['text']
-            sender_ = status['user']['screen_name']
-            print("============================================")
-            print("Recieved tweet from {}".format(sender_))
+        id_str = status['id_str']
+        text_ = status['text']
+        sender_ = status['user']['screen_name']
+        print("============================================")
+        print("Recieved tweet from {}".format(sender_))
 
+        try:
+            # Image attached
             media_url = status['entities']['media'][0]['media_url_https']
             print("Image URL is {}".format(media_url))
-
-            # Download and save image
-            path = "server/in/"
-            filename = str(id_str) + '.jpeg'
-            f = open(path + filename, 'wb')
-            f.write(requests.get(media_url).content)
-            f.close()
-
-            # Call the simulation on this downloaded file
-            # This should result on several images placed in /server/output
-            print("Started simulation")
-            run_sim(path + filename)
-
-            # Generate GIF
-            print("Creating GIF")
-            create_gif(sorted(glob.glob('server/out/{}*.png'.format(id_str))), 0.15)
-
-            # Tweet back with the image!
-            print("Tweeting back")
-            photo = open('server/out/{}.gif'.format(str(id_str)), 'rb')
-            response = twitter.upload_media(media=photo)
-            message = "Here is the simulation in your image! @{}".format(sender_)
-            twitter.update_status(status=message, media_ids=[response['media_id']],
-                                  in_reply_to_status_id=id_str)
-            print("All done successfully!")
-
         except:
-            error = traceback.format_exc()
-            print("TRACEBACK:")
-            print(error)
+            # No image attached
+            media_url = None
 
-            sc.api_call(
-                "chat.postMessage",
-                channel="twitter-fluid-flow",
-                text=str(error)
-            )
+        if media_url:
+            try:
+                # Download and save image
+                path = "server/in/"
+                filename = str(id_str) + '.jpeg'
+                f = open(path + filename, 'wb')
+                f.write(requests.get(media_url).content)
+                f.close()
 
-        print()
+                # Call the simulation on this downloaded file
+                # This should result on several images placed in /server/output
+                print("Started simulation")
+                run_sim(path + filename)
+
+                # Generate GIF
+                print("Creating GIF")
+                create_gif(sorted(glob.glob('server/out/{}*.png'.format(id_str))), 0.15)
+
+                # Tweet back with the image!
+                print("Tweeting back")
+                photo = open('server/out/{}.gif'.format(str(id_str)), 'rb')
+                response = twitter.upload_media(media=photo)
+                message = "Here is the simulation in your image! @{}".format(sender_)
+                twitter.update_status(status=message, media_ids=[response['media_id']],
+                                      in_reply_to_status_id=id_str)
+                print("All done successfully!")
+                print()
+
+
+            except:
+                error = traceback.format_exc()
+                print("TRACEBACK:")
+                print(error)
+
+                sc.api_call(
+                    "chat.postMessage",
+                    channel="twitter-fluid-flow",
+                    text=str(error))
+
+        else:
+            # No image attached
+            message = "Please attach an image to your tweet @{}".format(sender_)
+            twitter.update_status(status=message, in_reply_to_status_id=id_str)
+            print("Empty message, replied.")
+
 
 if __name__ == "__main__":
     myStream = MyStreamListener(consumer_key, consumer_secret,
