@@ -17,7 +17,10 @@ with open("credentials.txt") as f:
     consumer_secret = f.readline().strip()
     access_token = f.readline().strip()
     access_token_secret = f.readline().strip()
-    slack_token = f.readline().strip()
+    try:
+        slack_token = f.readline().strip()
+    except:
+        pass
 
 twitter = Twython(consumer_key, consumer_secret,
                   access_token, access_token_secret)
