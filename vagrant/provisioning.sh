@@ -14,8 +14,8 @@ sudo apt-get install libgtk2.0-0 -y
 sudo apt-get install gcc -y
 conda install -y -c menpo opencv3
 # pip install opencv-python
-conda install -y numba cython
-pip install pynput tweepy imageio
+conda install -y numba cython twython slackclient
+pip install pynput imageio
 echo "============== Finished installing interactive-fluid-twitter dependencies =============="
 
 # Get the project code
