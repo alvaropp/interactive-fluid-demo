@@ -10,7 +10,7 @@ An implementation of [interactive-fluid-demo](https://github.com/ngcm/interactiv
  * A Twitter account
  * A Twitter app linked to that account
 
-Create a file called `credentials.txt` and place it in the main directory. First to fourth lines should contain the consumer key, the consumer secret, the access token and the access token secret, respectively.
+Create a file called `credentials.txt` and place it in the main directory. First to fourth lines should contain the consumer key, the consumer secret, the access token and the access token secret, respectively. If needed, the fifth line can contain the Slack app auth token as well.
 
 ## Installation in Linux
 Can be easily run on any Linux box, just follow the [instructions here](https://github.com/ngcm/interactive-fluid-demo#installation).
